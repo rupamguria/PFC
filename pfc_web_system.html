@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PFC Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            light: '#5eead4', // teal-300
+                            DEFAULT: '#14b8a6', // teal-500
+                            dark: '#0f766e', // teal-700
+                            bg: '#022c22' // teal-950
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #020617; } /* slate-950 */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(20, 184, 166, 0.2);
+        }
+        .neon-text {
+            text-shadow: 0 0 10px rgba(79, 240, 229, 0.5);
+        }
+        /* Hide number arrows */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen flex items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-slate-950 via-brand-bg to-slate-900">
+
+    <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Input Form -->
+        <div class="glass-panel p-6 sm:p-8 rounded-2xl shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-dark to-brand-light"></div>
+            
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-lg bg-brand flex items-center justify-center shadow-[0_0_15px_rgba(20,184,166,0.6)]">
+                    <svg class="w-6 h-6 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h1 class="text-2xl font-bold text-white tracking-tight">PFC<span class="text-brand-light neon-text">System</span></h1>
+            </div>
+
+            <div class="space-y-5">
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-brand-light uppercase mb-1">Power (kW)</label>
+                        <input type="number" id="p_kw" value="100" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-light focus:ring-1 focus:ring-brand-light transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-brand-light uppercase mb-1">Volts (V)</label>
+                        <input type="number" id="v_ll" value="400" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-light focus:ring-1 focus:ring-brand-light transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-brand-light uppercase mb-1">Freq (Hz)</label>
+                        <input type="number" id="f_hz" value="50" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-light focus:ring-1 focus:ring-brand-light transition">
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                    <label class="block text-sm font-semibold text-white mb-3">Current Power Factor</label>
+                    <div class="flex gap-4">
+                        <input type="number" id="pf1" step="0.01" value="0.70" max="1" min="0" class="w-1/2 bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition">
+                        <select id="type1" class="w-1/2 bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition appearance-none">
+                            <option value="lag">Lagging</option>
+                            <option value="lead">Leading</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                    <label class="block text-sm font-semibold text-white mb-3">Target Power Factor</label>
+                    <div class="flex gap-4">
+                        <input type="number" id="pf2" step="0.01" value="0.95" max="1" min="0" class="w-1/2 bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition">
+                        <select id="type2" class="w-1/2 bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition appearance-none">
+                            <option value="lag">Lagging</option>
+                            <option value="lead">Leading</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="calculatePFC()" class="w-full bg-brand hover:bg-brand-light text-slate-950 font-bold py-3 px-4 rounded-lg shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:shadow-[0_0_25px_rgba(94,234,212,0.6)] transition-all duration-300 transform hover:-translate-y-0.5">
+                    Calculate Correction
+                </button>
+            </div>
+        </div>
+
+        <!-- Output Terminal -->
+        <div class="glass-panel rounded-2xl shadow-2xl relative overflow-hidden p-6 sm:p-8 bg-black/40 font-mono text-sm sm:text-base text-brand-light overflow-auto whitespace-pre-wrap flex flex-col" id="terminal-output">
+> SYSTEM READY
+> Awaiting parameters for calculation...
+        </div>
+    </div>
+
+    <script>
+        // 3-Phase SVG components
+        const starCapSvg = `<svg viewBox="0 0 120 110" class="w-full max-w-[120px] h-auto mx-auto text-brand-light" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="60" cy="55" r="2.5" fill="currentColor"/>
+            <!-- R Branch -->
+            <g transform="translate(60,55) rotate(-90)">
+                <path d="M 0 0 L 15 0 M 15 -8 L 15 8 M 23 -8 L 23 8 M 23 0 L 40 0" />
+                <circle cx="40" cy="0" r="2.5" fill="currentColor"/>
+            </g>
+            <text x="60" y="10" font-size="12" font-family="sans-serif" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">R</text>
+            
+            <!-- Y Branch -->
+            <g transform="translate(60,55) rotate(30)">
+                <path d="M 0 0 L 15 0 M 15 -8 L 15 8 M 23 -8 L 23 8 M 23 0 L 40 0" />
+                <circle cx="40" cy="0" r="2.5" fill="currentColor"/>
+            </g>
+            <text x="100" y="85" font-size="12" font-family="sans-serif" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">Y</text>
+            
+            <!-- B Branch -->
+            <g transform="translate(60,55) rotate(150)">
+                <path d="M 0 0 L 15 0 M 15 -8 L 15 8 M 23 -8 L 23 8 M 23 0 L 40 0" />
+                <circle cx="40" cy="0" r="2.5" fill="currentColor"/>
+            </g>
+            <text x="20" y="85" font-size="12" font-family="sans-serif" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">B</text>
+        </svg>`;
+
+        const deltaCapSvg = `<svg viewBox="0 0 120 110" class="w-full max-w-[120px] h-auto mx-auto text-brand-light" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="60" cy="20" r="2.5" fill="currentColor"/>
+            <text x="60" y="12" font-size="12" font-family="sans-serif" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">R</text>
+            
+            <g transform="translate(60,20) rotate(60)">
+                <path d="M 0 0 L 31 0 M 31 -8 L 31 8 M 39 -8 L 39 8 M 39 0 L 70 0" />
+            </g>
+            
+            <circle cx="95" cy="80.6" r="2.5" fill="currentColor"/>
+            <text x="105" y="90" font-size="12" font-family="sans-serif" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">Y</text>
+            
+            <g transform="translate(95,80.6) rotate(180)">
+                <path d="M 0 0 L 31 0 M 31 -8 L 31 8 M 39 -8 L 39 8 M 39 0 L 70 0" />
+            </g>
+            
+            <circle cx="25" cy="80.6" r="2.5" fill="currentColor"/>
+            <text x="15" y="90" font-size="12" font-family="sans-serif" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">B</text>
+            
+            <g transform="translate(25,80.6) rotate(-60)">
+                <path d="M 0 0 L 31 0 M 31 -8 L 31 8 M 39 -8 L 39 8 M 39 0 L 70 0" />
+            </g>
+        </svg>`;
+
+        const starIndSvg = `<svg viewBox="0 0 120 110" class="w-full max-w-[120px] h-auto mx-auto text-orange-400" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="60" cy="55" r="2.5" fill="currentColor"/>
+            <!-- R Branch -->
+            <g transform="translate(60,55) rotate(-90)">
+                <path d="M 0 0 L 10 0 C 10 -8, 16 -8, 16 0 C 16 -8, 22 -8, 22 0 C 22 -8, 28 -8, 28 0 L 40 0" />
+                <circle cx="40" cy="0" r="2.5" fill="currentColor"/>
+            </g>
+            <text x="60" y="10" font-size="12" font-family="sans-serif" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">R</text>
+            
+            <!-- Y Branch -->
+            <g transform="translate(60,55) rotate(30)">
+                <path d="M 0 0 L 10 0 C 10 -8, 16 -8, 16 0 C 16 -8, 22 -8, 22 0 C 22 -8, 28 -8, 28 0 L 40 0" />
+                <circle cx="40" cy="0" r="2.5" fill="currentColor"/>
+            </g>
+            <text x="100" y="85" font-size="12" font-family="sans-serif" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">Y</text>
+            
+            <!-- B Branch -->
+            <g transform="translate(60,55) rotate(150)">
+                <path d="M 0 0 L 10 0 C 10 -8, 16 -8, 16 0 C 16 -8, 22 -8, 22 0 C 22 -8, 28 -8, 28 0 L 40 0" />
+                <circle cx="40" cy="0" r="2.5" fill="currentColor"/>
+            </g>
+            <text x="20" y="85" font-size="12" font-family="sans-serif" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">B</text>
+        </svg>`;
+
+        const deltaIndSvg = `<svg viewBox="0 0 120 110" class="w-full max-w-[120px] h-auto mx-auto text-orange-400" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="60" cy="20" r="2.5" fill="currentColor"/>
+            <text x="60" y="12" font-size="12" font-family="sans-serif" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">R</text>
+            
+            <g transform="translate(60,20) rotate(60)">
+                <path d="M 0 0 L 22 0 C 22 -8, 28 -8, 28 0 C 28 -8, 34 -8, 34 0 C 34 -8, 40 -8, 40 0 C 40 -8, 46 -8, 46 0 L 70 0" />
+            </g>
+            
+            <circle cx="95" cy="80.6" r="2.5" fill="currentColor"/>
+            <text x="105" y="90" font-size="12" font-family="sans-serif" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">Y</text>
+            
+            <g transform="translate(95,80.6) rotate(180)">
+                <path d="M 0 0 L 22 0 C 22 -8, 28 -8, 28 0 C 28 -8, 34 -8, 34 0 C 34 -8, 40 -8, 40 0 C 40 -8, 46 -8, 46 0 L 70 0" />
+            </g>
+            
+            <circle cx="25" cy="80.6" r="2.5" fill="currentColor"/>
+            <text x="15" y="90" font-size="12" font-family="sans-serif" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">B</text>
+            
+            <g transform="translate(25,80.6) rotate(-60)">
+                <path d="M 0 0 L 22 0 C 22 -8, 28 -8, 28 0 C 28 -8, 34 -8, 34 0 C 34 -8, 40 -8, 40 0 C 40 -8, 46 -8, 46 0 L 70 0" />
+            </g>
+        </svg>`;
+
+        function calculatePFC() {
+            // Get inputs
+            const P_kW = parseFloat(document.getElementById('p_kw').value);
+            const V_LL = parseFloat(document.getElementById('v_ll').value);
+            const f = parseFloat(document.getElementById('f_hz').value);
+            
+            const pf1 = parseFloat(document.getElementById('pf1').value);
+            const type1 = document.getElementById('type1').value;
+            
+            const pf2 = parseFloat(document.getElementById('pf2').value);
+            const type2 = document.getElementById('type2').value;
+
+            const terminal = document.getElementById('terminal-output');
+
+            // Validations
+            if(isNaN(P_kW) || isNaN(V_LL) || isNaN(f) || isNaN(pf1) || isNaN(pf2)) {
+                terminal.innerHTML = "<span class='text-red-400'>[ERROR] Invalid numerical input detected.</span>";
+                return;
+            }
+            if(pf1 > 1 || pf1 < 0 || pf2 > 1 || pf2 < 0) {
+                terminal.innerHTML = "<span class='text-red-400'>[ERROR] Power factor must be between 0 and 1.</span>";
+                return;
+            }
+
+            // Math 
+            const P_W = P_kW * 1000.0;
+            const theta1 = Math.acos(pf1);
+            const theta2 = Math.acos(pf2);
+
+            let Q1 = P_W * Math.tan(theta1);
+            if (type1 === 'lead') Q1 = -Q1;
+
+            let Q2 = P_W * Math.tan(theta2);
+            if (type2 === 'lead') Q2 = -Q2;
+
+            const Qc = Q1 - Q2;
+            const omega = 2.0 * Math.PI * f;
+            const Q_comp = Math.abs(Qc);
+
+            let output = `<div class="font-bold text-white text-xl mb-4 text-center">POWER FACTOR CORRECTION RESULT</div>`;
+
+            if (Math.abs(Qc) < 0.1) {
+                output += `<div class="text-yellow-400 text-center mt-8">No correction needed. System is balanced.</div>`;
+            } else if (Qc > 0) {
+                // Capacitor
+                const c_star = Q_comp / (V_LL * V_LL * omega);
+                const c_delta = c_star / 3.0;
+
+                output += `<div class="text-center mb-6 text-brand-light font-bold text-lg">Connect: CAPACITOR BANK</div>
+                
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="bg-slate-800/60 p-4 rounded-xl border border-brand/30 flex flex-col items-center justify-center">
+                        ${starCapSvg}
+                        <div class="text-slate-300 font-semibold tracking-wider text-sm mt-4">STAR CONNECTION (Y)</div>
+                        <div class="text-white text-xl font-bold mt-1">${(c_star * 1e6).toFixed(3)} µF / phase</div>
+                    </div>
+                    
+                    <div class="bg-slate-800/60 p-4 rounded-xl border border-brand/30 flex flex-col items-center justify-center">
+                        ${deltaCapSvg}
+                        <div class="text-slate-300 font-semibold tracking-wider text-sm mt-4">DELTA CONNECTION (Δ)</div>
+                        <div class="text-white text-xl font-bold mt-1">${(c_delta * 1e6).toFixed(3)} µF / phase</div>
+                    </div>
+                </div>`;
+            } else {
+                // Inductor
+                const l_star = (V_LL * V_LL) / (omega * Q_comp);
+                const l_delta = l_star * 3.0;
+
+                output += `<div class="text-center mb-6 text-orange-400 font-bold text-lg">Connect: INDUCTOR BANK</div>
+                
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="bg-slate-800/60 p-4 rounded-xl border border-orange-500/30 flex flex-col items-center justify-center">
+                        ${starIndSvg}
+                        <div class="text-slate-300 font-semibold tracking-wider text-sm mt-4">STAR CONNECTION (Y)</div>
+                        <div class="text-white text-xl font-bold mt-1">${(l_star * 1000.0).toFixed(3)} mH / phase</div>
+                    </div>
+                    
+                    <div class="bg-slate-800/60 p-4 rounded-xl border border-orange-500/30 flex flex-col items-center justify-center">
+                        ${deltaIndSvg}
+                        <div class="text-slate-300 font-semibold tracking-wider text-sm mt-4">DELTA CONNECTION (Δ)</div>
+                        <div class="text-white text-xl font-bold mt-1">${(l_delta * 1000.0).toFixed(3)} mH / phase</div>
+                    </div>
+                </div>`;
+            }
+
+            // Small animation effect
+            terminal.innerHTML = "";
+            let i = 0;
+            terminal.innerHTML = output; // For instant result without typing delay to maintain formatting
+        }
+        
+        // Run once on load to show initial generic result
+        window.onload = calculatePFC;
+    </script>
+</body>
+</html>
